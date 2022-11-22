@@ -47,7 +47,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/a.out",
-            "args": ["<", "${fileDirname}/provided_tests/t6.txt"],
+            "args": ["<", "${fileDirname}/provided_tests/test_assignment_basic1.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
