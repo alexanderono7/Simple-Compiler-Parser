@@ -45,11 +45,11 @@ void parse_id_list(){
     // id_list -> ID COMMA id_list | ID
     expect(ID);
 
-    Token t = lexer.peek(1);
-    if(t.token_type == COMMA){
+    TokenType t = lexer.peek(1).token_type;
+    if(t==COMMA){
         expect(COMMA);
         parse_id_list(); 
-    }else if(t.token_type == SEMICOLON){
+    }else if(t==SEMICOLON){
         // end of id_list and end of var_section
         return;
     }else{
@@ -67,16 +67,16 @@ void parse_body(){
 InstructionNode* parse_stmt_list(){
     // stmt_list -> stmt stmt_list | stmt
     parse_stmt();
-    Token t = lexer.peek(1);
+    TokenType t = lexer.peek(1).token_type;
 
     // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
 
-    if(stmt_fs.find(t.token_type) != stmt_fs.end()){ // check if t.token_type is in FIRST(stmt)
+    if(stmt_fs.find(t) != stmt_fs.end()){ // check if t.token_type is in FIRST(stmt)
         parse_stmt_list(); 
-    }else if(t.token_type == RBRACE){ // is this really accurate?
+    }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
-        return;
+        return NULL;
     }else{
         raise_error();
     }
@@ -106,6 +106,207 @@ InstructionNode* parse_stmt(){
         case FOR:
             InstructionNode* parse_for_stmt;
             break;
+        default:
+            raise_error;
+            break;
+    }
+}
+
+InstructionNode* parse_assign_stmt(){
+    // assign_stmt -> ID EQUAL primary SEMICOLON | ID EQUAL expr SEMICOLON
+    expect(ID);
+    expect(EQUAL);
+
+    TokenType t = lexer.peek(1).token_type;
+    TokenType s = lexer.peek(2).token_type;
+    // check if t is in FIRST(primary) or FIRST(expr)
+    // FIRST(primary) = ID | NUM //only has 1 token
+    // FIRST(expr) = ID | NUM 
+    // SECOND(expr) = op
+    if(t==ID or t==NUM){
+        if(s==SEMICOLON){
+            parse_primary();
+        }else if(s==PLUS or s==MINUS or s==MULT or s==DIV){
+            parse_expr();
+        }else{
+            raise_error();
+        }
+    }else{
+        raise_error();
+    }
+
+    expect(SEMICOLON);
+}
+
+void parse_expr(){
+    // expr -> primary op primary
+    parse_primary();
+    parse_op();
+    parse_primary();
+}
+
+void parse_primary(){
+    // primary -> ID | NUM
+    Token t = lexer.peek(1);
+
+    if(t.token_type == ID)
+        expect(ID);
+    else if(t.token_type == NUM)
+        expect(NUM);
+    else{
+        raise_error();
+    }
+}
+
+void parse_op(){
+    // op -> PLUS | MINUS | MULT | DIV
+    TokenType t = lexer.peek(1).token_type;
+    switch(t){
+        case PLUS:
+            expect(PLUS);
+            break;
+        case MINUS:
+            expect(MINUS);
+            break;
+        case MULT:
+            expect(MULT);
+            break;
+        case DIV:
+            expect(DIV);
+            break;
+        default:
+            raise_error();
+            break;
+    }
+}
+
+InstructionNode* parse_output_stmt(){
+    // output_stmt = OUTPUT ID SEMICOLON
+    expect(OUTPUT);
+    expect(ID);
+    expect(SEMICOLON);
+}
+
+InstructionNode* parse_input_stmt(){
+    // input_stmt = INPUT ID SEMICOLON
+    expect(INPUT);
+    expect(ID);
+    expect(SEMICOLON);
+}
+
+InstructionNode* parse_while_stmt(){
+    // while_stmt -> WHILE condition body
+    expect(WHILE);
+    parse_condition();
+    parse_body();
+}
+
+InstructionNode* parse_if_stmt(){
+    // if_stmt -> IF condition body
+    expect(IF);
+    parse_condition();
+    parse_body();
+}
+
+void parse_condition(){
+    // condition -> primary relop primary
+    parse_primary();
+    parse_relop();
+    parse_primary();
+}
+
+void parse_relop(){
+    // relop -> GREATER | LESS | NOTEQUAL
+    TokenType t = lexer.peek(1).token_type;
+    switch(t){
+        case GREATER:
+            expect(GREATER);
+            break;
+        case LESS:
+            expect(LESS);
+            break;
+        case NOTEQUAL:
+            expect(NOTEQUAL);
+            break;
+        default:
+            raise_error();
+            break;
+    }
+}
+
+InstructionNode* parse_switch_stmt(){
+    // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
+    // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
+    expect(SWITCH);
+    expect(ID);
+    expect(LBRACE);
+    parse_case_list();
+    TokenType t = lexer.peek(1).token_type;
+    if(t==DEFAULT){
+        parse_default_case();
+    }else if(t==RBRACE){
+        ; // do nothing, fix later.
+    }else{
+        raise_error();
+    }
+    expect(RBRACE);
+}
+
+InstructionNode* parse_for_stmt(){
+    // for_stmt -> FOR LPAREN...
+    expect(FOR);
+    expect(LPAREN);
+    parse_assign_stmt();
+    parse_condition();
+    expect(SEMICOLON);
+    parse_assign_stmt();
+    expect(RPAREN);
+
+    parse_body();
+}
+
+void parse_case_list(){
+    // case_list -> case case_list | case
+    parse_case();
+    TokenType t = lexer.peek(1).token_type;
+    if(t==CASE){
+        parse_case_list();
+    }else if(t==DEFAULT or t==RBRACE){
+        ; // end of case list
+    }else{
+        raise_error();
+    }
+}
+
+void parse_case(){
+    expect(CASE);
+    expect(NUM);
+    expect(COLON);
+    parse_body();
+}
+
+void parse_default_case(){
+    expect(DEFAULT);
+    expect(COLON);
+    parse_body();
+}
+
+// inputs is a list of input values. Consume one at every input statement?
+void parse_inputs(){
+    parse_num_list();
+}
+
+void parse_num_list(){
+    // num_list -> NUM | NUM num_list
+    expect(NUM);
+
+    TokenType t = lexer.peek(1).token_type;
+    if(t==NUM){
+        parse_num_list();
+    }else if(t==END_OF_FILE){
+        ; // end of case list
+    }else{
+        raise_error();
     }
 }
 
