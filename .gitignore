@@ -7,3 +7,4 @@ for_export
 .out
 build
 Testing
+.vscode/settings.json
