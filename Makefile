@@ -7,6 +7,6 @@
 
 .SILENT:
 build:
-	g++ -std=c++11 -g -ggdb -Wall execute.cc inputbuf.cc lexer.cc parser.cc -o a.out 
+	g++ -std=c++11 -g -ggdb -Wall -Wno-sign-compare execute.cc inputbuf.cc lexer.cc parser.cc -o a.out 
 demo:
 	g++ -std=c++11 -g -ggdb -Wall execute.cc inputbuf.cc lexer.cc demo.cc -o a.out 
