@@ -27,12 +27,13 @@ struct InstructionNode * parse_generate_intermediate_representation()
 {
     cout << "program executed!\n"; // remove later
     // program -> var_section body inputs
+    InstructionNode* head;
 
     parse_var_section();
     parse_body();
     parse_inputs();
     
-    return NULL; // should return head node to intermediate code
+    return head; // should return head node to intermediate code
 }
 
 void parse_var_section(){
@@ -44,7 +45,8 @@ void parse_var_section(){
 
 void parse_id_list(){
     // id_list -> ID COMMA id_list | ID
-    expect(ID);
+    Token var = expect(ID);
+    new_variable(var.lexeme);
 
     TokenType t = lexer.peek(1).token_type;
     if(t==COMMA){
