@@ -17,7 +17,6 @@
 
 using namespace std;
 
-LexicalAnalyzer lexer;  
 
 // maybe don't use this?
 class Parser {
@@ -25,6 +24,7 @@ class Parser {
     private:
 };
 
+// Parsing Functions
 void readAndPrintAllInput();
 void parse_var_section();
 void parse_id_list();
@@ -52,6 +52,9 @@ void parse_default_case();
 void parse_inputs();
 void parse_num_list();
 
+// Non-Parsing Functions
 void raise_error();
+int location(string a);
+void new_variable(string name);
 
 #endif

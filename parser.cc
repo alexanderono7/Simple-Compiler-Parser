@@ -1,5 +1,7 @@
 #include "parser.h"
 
+LexicalAnalyzer lexer;  // hopefully this won't cause issues, but I might need to combine parser.cc and other.cc into 1 file.
+
 /* 
 As stated in the project document, there shouldn't be any syntax/semantic errors in any
 test cases, but I've included this so I know if my code is messing up somewhere.
