@@ -26,7 +26,6 @@ struct InstructionNode * parse_generate_intermediate_representation()
     cout << "program executed!\n"; // remove later
     // program -> var_section body inputs
 
-    readAndPrintAllInput();
     parse_var_section();
     parse_body();
     parse_inputs();
@@ -72,7 +71,7 @@ InstructionNode* parse_stmt_list(){
     // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
 
-    if(stmt_fs.find(t) != stmt_fs.end()){ // check if t.token_type is in FIRST(stmt)
+    if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt)
         parse_stmt_list(); 
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
@@ -80,36 +79,38 @@ InstructionNode* parse_stmt_list(){
     }else{
         raise_error();
     }
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_stmt(){
-    Token t = lexer.peek(1);
-    switch(t.token_type){
+    TokenType t = lexer.peek(1).token_type;
+    switch(t){
         case ID:
-            InstructionNode* parse_assign_stmt;
+            parse_assign_stmt();
             break;
         case OUTPUT:
-            InstructionNode* parse_output_stmt;
+            parse_output_stmt();
             break;
         case INPUT:
-            InstructionNode* parse_input_stmt;
+            parse_input_stmt();
             break;
         case WHILE:
-            InstructionNode* parse_while_stmt;
+            parse_while_stmt();
             break;
         case IF:
-            InstructionNode* parse_if_stmt;
+            parse_if_stmt();
             break;
         case SWITCH:
-            InstructionNode* parse_switch_stmt;
+            parse_switch_stmt();
             break;
         case FOR:
-            InstructionNode* parse_for_stmt;
+            parse_for_stmt();
             break;
         default:
-            raise_error;
+            raise_error();
             break;
     }
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_assign_stmt(){
@@ -136,6 +137,7 @@ InstructionNode* parse_assign_stmt(){
     }
 
     expect(SEMICOLON);
+    return NULL; // placeholder
 }
 
 void parse_expr(){
@@ -185,6 +187,7 @@ InstructionNode* parse_output_stmt(){
     expect(OUTPUT);
     expect(ID);
     expect(SEMICOLON);
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_input_stmt(){
@@ -192,6 +195,7 @@ InstructionNode* parse_input_stmt(){
     expect(INPUT);
     expect(ID);
     expect(SEMICOLON);
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_while_stmt(){
@@ -199,6 +203,7 @@ InstructionNode* parse_while_stmt(){
     expect(WHILE);
     parse_condition();
     parse_body();
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_if_stmt(){
@@ -206,6 +211,7 @@ InstructionNode* parse_if_stmt(){
     expect(IF);
     parse_condition();
     parse_body();
+    return NULL; // placeholder
 }
 
 void parse_condition(){
@@ -250,6 +256,7 @@ InstructionNode* parse_switch_stmt(){
         raise_error();
     }
     expect(RBRACE);
+    return NULL; // placeholder
 }
 
 InstructionNode* parse_for_stmt(){
@@ -263,6 +270,7 @@ InstructionNode* parse_for_stmt(){
     expect(RPAREN);
 
     parse_body();
+    return NULL; // placeholder
 }
 
 void parse_case_list(){
