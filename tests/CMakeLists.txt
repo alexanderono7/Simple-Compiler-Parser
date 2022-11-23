@@ -4,9 +4,13 @@
 #   sudo apt install libboost-all-dev
 # 1 actual test case per file, I guess?
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+# I'm not really sure how to make it run testcases from each file individually, or even 
+# if it's possible on VSCode. Oh well. It doesn't make much of a difference.
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
+#find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+
+#include_directories("${PROJECT_SOURCE_DIR}/include")
 
 set(TEST_SOURCES ${PROJECT_SOURCE_DIR}/tests/tests.cc)
 
@@ -14,5 +18,4 @@ set(TEST_LIBS project3)
 
 add_executable(tests ${TEST_SOURCES})
 target_link_libraries(tests ${TEST_LIBS} ${Boost_LIBRARIES})
-add_test(QuickStartTest tests COMMAND tests) # replace "QuickStartTest" with the specific test name or group name
-add_test(SubtractionTest tests COMMAND tests)
+add_test(test1 tests) # replace "test1" with the specific test name or group name
