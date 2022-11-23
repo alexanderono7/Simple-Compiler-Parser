@@ -30,7 +30,7 @@ void assign_next_input(string name){
     // inputs can be thought of as a stack.
 }
 
-// Push int value of `t` to `inputs` vector.
+// Push int value of Token `t` to `inputs` vector.
 void add_input(Token t){
     int val = stoi(t.lexeme);
     inputs.push_back(val);

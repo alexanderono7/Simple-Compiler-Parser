@@ -70,55 +70,58 @@ void parse_body(){
 
 InstructionNode* parse_stmt_list(){
     // stmt_list -> stmt stmt_list | stmt
-    parse_stmt();
+    InstructionNode* stmt = parse_stmt();
     TokenType t = lexer.peek(1).token_type;
 
     // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
 
     if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt)
-        parse_stmt_list(); 
+        stmt->next = parse_stmt_list(); 
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
         return NULL;
     }else{
         raise_error();
     }
-    return NULL; // placeholder
+    return stmt; // placeholder
 }
 
 InstructionNode* parse_stmt(){
+    // I believe new instruction nodes should be instanciated here.
+    InstructionNode* stmt = new InstructionNode();
+
     TokenType t = lexer.peek(1).token_type;
     switch(t){
         case ID:
-            parse_assign_stmt();
+            parse_assign_stmt(stmt);
             break;
         case OUTPUT:
-            parse_output_stmt();
+            parse_output_stmt(stmt);
             break;
         case INPUT:
-            parse_input_stmt();
+            parse_input_stmt(stmt);
             break;
         case WHILE:
-            parse_while_stmt();
+            parse_while_stmt(stmt);
             break;
         case IF:
-            parse_if_stmt();
+            parse_if_stmt(stmt);
             break;
         case SWITCH:
-            parse_switch_stmt();
+            parse_switch_stmt(stmt);
             break;
         case FOR:
-            parse_for_stmt();
+            parse_for_stmt(stmt);
             break;
         default:
             raise_error();
             break;
     }
-    return NULL; // placeholder
+    return stmt; // placeholder
 }
 
-InstructionNode* parse_assign_stmt(){
+InstructionNode* parse_assign_stmt(InstructionNode* stmt){
     // assign_stmt -> ID EQUAL primary SEMICOLON | ID EQUAL expr SEMICOLON
     expect(ID);
     expect(EQUAL);
@@ -187,7 +190,7 @@ void parse_op(){
     }
 }
 
-InstructionNode* parse_output_stmt(){
+InstructionNode* parse_output_stmt(InstructionNode* stmt){
     // output_stmt = OUTPUT ID SEMICOLON
     expect(OUTPUT);
     expect(ID);
@@ -195,7 +198,7 @@ InstructionNode* parse_output_stmt(){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_input_stmt(){
+InstructionNode* parse_input_stmt(InstructionNode* stmt){
     // input_stmt = INPUT ID SEMICOLON
     expect(INPUT);
     expect(ID);
@@ -203,7 +206,7 @@ InstructionNode* parse_input_stmt(){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_while_stmt(){
+InstructionNode* parse_while_stmt(InstructionNode* stmt){
     // while_stmt -> WHILE condition body
     expect(WHILE);
     parse_condition();
@@ -211,7 +214,7 @@ InstructionNode* parse_while_stmt(){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_if_stmt(){
+InstructionNode* parse_if_stmt(InstructionNode* stmt){
     // if_stmt -> IF condition body
     expect(IF);
     parse_condition();
@@ -245,7 +248,7 @@ void parse_relop(){
     }
 }
 
-InstructionNode* parse_switch_stmt(){
+InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
     // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
     expect(SWITCH);
@@ -264,14 +267,16 @@ InstructionNode* parse_switch_stmt(){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_for_stmt(){
+InstructionNode* parse_for_stmt(InstructionNode* stmt){
     // for_stmt -> FOR LPAREN...
+    InstructionNode* assign1 = new InstructionNode();
+    InstructionNode* assign2 = new InstructionNode();
     expect(FOR);
     expect(LPAREN);
-    parse_assign_stmt();
+    parse_assign_stmt(assign1);
     parse_condition();
     expect(SEMICOLON);
-    parse_assign_stmt();
+    parse_assign_stmt(assign2);
     expect(RPAREN);
 
     parse_body();
