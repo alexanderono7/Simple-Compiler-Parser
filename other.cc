@@ -22,3 +22,16 @@ void new_variable(string name){
 
     next_available++;
 }
+
+// Given name of variable, assign its value as the next input value.
+void assign_next_input(string name){
+    mem[location(name)] = inputs[next_input];
+    next_input++;
+    // inputs can be thought of as a stack.
+}
+
+// Push int value of `t` to `inputs` vector.
+void add_input(Token t){
+    int val = stoi(t.lexeme);
+    inputs.push_back(val);
+}

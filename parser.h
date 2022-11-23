@@ -56,5 +56,7 @@ void parse_num_list();
 void raise_error();
 int location(string a);
 void new_variable(string name);
+void assign_next_input(string name);
+void add_input(Token t);
 
 #endif

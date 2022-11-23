@@ -29,6 +29,7 @@ struct InstructionNode * parse_generate_intermediate_representation()
     // program -> var_section body inputs
     InstructionNode* head;
 
+    //raise_error(); // for testing/debugging
     parse_var_section();
     parse_body();
     parse_inputs();
@@ -310,7 +311,8 @@ void parse_inputs(){
 
 void parse_num_list(){
     // num_list -> NUM | NUM num_list
-    expect(NUM);
+    Token val = expect(NUM);
+    add_input(val); // add Token's integer value to `inputs` vect
 
     TokenType t = lexer.peek(1).token_type;
     if(t==NUM){
