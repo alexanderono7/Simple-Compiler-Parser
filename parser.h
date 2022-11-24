@@ -28,19 +28,19 @@ class Parser {
 void readAndPrintAllInput();
 void parse_var_section();
 void parse_id_list();
-void parse_body();
+InstructionNode* parse_body();
 InstructionNode* parse_stmt_list(); 
 InstructionNode* parse_stmt();
 
 InstructionNode* parse_assign_stmt(InstructionNode* stmt);
-void parse_expr();
-void parse_primary();
-void parse_op();
+void parse_expr(InstructionNode* stmt);
+int parse_primary();
+ArithmeticOperatorType parse_op();
 
 InstructionNode* parse_output_stmt(InstructionNode* stmt);
 InstructionNode* parse_input_stmt(InstructionNode* stmt);
 InstructionNode* parse_while_stmt(InstructionNode* stmt);
-InstructionNode* parse_if_stmt();
+InstructionNode* parse_if_stmt(InstructionNode* stmt);
 void parse_condition();
 void parse_relop();
 InstructionNode* parse_switch_stmt(InstructionNode* stmt);
@@ -55,8 +55,10 @@ void parse_num_list();
 // Non-Parsing Functions
 void raise_error();
 int location(string a);
+int location(Token token);
 void new_variable(string name);
 void assign_next_input(string name);
 void add_input(Token t);
+void set_value(string name, int value);
 
 #endif

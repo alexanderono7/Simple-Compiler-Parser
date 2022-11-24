@@ -31,9 +31,10 @@ struct InstructionNode * parse_generate_intermediate_representation()
 
     //raise_error(); // for testing/debugging
     parse_var_section();
-    parse_body();
+    head = parse_body();
     parse_inputs();
     
+    cout << "program finished.\n"; // remove later
     return head; // should return head node to intermediate code
 }
 
@@ -61,30 +62,37 @@ void parse_id_list(){
     }
 }
 
-void parse_body(){
+InstructionNode* parse_body(){
     // body -> LBRACE stmt_list RBRACE
+    InstructionNode* instList;
+
     expect(LBRACE);
-    parse_stmt_list();
+    instList = parse_stmt_list();
     expect(RBRACE);
+    
+    return instList;
 }
 
 InstructionNode* parse_stmt_list(){
     // stmt_list -> stmt stmt_list | stmt
-    InstructionNode* stmt = parse_stmt();
-    TokenType t = lexer.peek(1).token_type;
+    InstructionNode* inst; // instruction for one statement
+    InstructionNode* instList; // instruction for statement list
+    inst = parse_stmt();
+
 
     // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
+    TokenType t = lexer.peek(1).token_type;
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
-
-    if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt)
-        stmt->next = parse_stmt_list(); 
+    if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt) to see if stmt_list continues
+        instList = parse_stmt_list(); 
+        inst->next = instList; // append instList to inst;
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
-        return NULL;
+        ;
     }else{
         raise_error();
     }
-    return stmt; // placeholder
+    return inst; // placeholder
 }
 
 InstructionNode* parse_stmt(){
@@ -122,9 +130,13 @@ InstructionNode* parse_stmt(){
 }
 
 InstructionNode* parse_assign_stmt(InstructionNode* stmt){
+    stmt->type = ASSIGN;
     // assign_stmt -> ID EQUAL primary SEMICOLON | ID EQUAL expr SEMICOLON
-    expect(ID);
+    Token lhs = expect(ID);
     expect(EQUAL);
+    
+    // Get reference to LHS variable.
+    stmt->assign_inst.left_hand_side_index = location(lhs.lexeme);
 
     TokenType t = lexer.peek(1).token_type;
     TokenType s = lexer.peek(2).token_type;
@@ -134,9 +146,12 @@ InstructionNode* parse_assign_stmt(InstructionNode* stmt){
     // SECOND(expr) = op
     if(t==ID or t==NUM){
         if(s==SEMICOLON){
-            parse_primary();
+            // No expression on RHS, just 1 integer/variable (e.g. x = 1;)
+            stmt->assign_inst.opernd1_index = parse_primary(); // get reference to the lone primary on the RHS.
+            stmt->assign_inst.op = OPERATOR_NONE;
         }else if(s==PLUS or s==MINUS or s==MULT or s==DIV){
-            parse_expr();
+            // There's an expression on RHS (e.g. x = 1+2;)
+            parse_expr(stmt); // adds appropriate expression field members to `stmt`
         }else{
             raise_error();
         }
@@ -148,41 +163,60 @@ InstructionNode* parse_assign_stmt(InstructionNode* stmt){
     return NULL; // placeholder
 }
 
-void parse_expr(){
+void parse_expr(InstructionNode* stmt){
     // expr -> primary op primary
-    parse_primary();
-    parse_op();
-    parse_primary();
+    stmt->assign_inst.opernd1_index = parse_primary();
+    stmt->assign_inst.op = parse_op();
+    stmt->assign_inst.opernd2_index = parse_primary();
+    /*
+    Side note: as defined in the grammar, `expr` should only ever be used inside of an assignment statement, so it 
+    should be fine to assume the `stmt` argument is always an assignment statement.
+    */
 }
 
-void parse_primary(){
+// Returns the mem index of the primary it parsed
+int parse_primary(){
     // primary -> ID | NUM
     Token t = lexer.peek(1);
 
-    if(t.token_type == ID)
-        expect(ID);
-    else if(t.token_type == NUM)
-        expect(NUM);
-    else{
+    Token token;
+
+
+    if(t.token_type == ID){
+
+        token = expect(ID);
+        new_variable(token.lexeme);
+    }else if(t.token_type == NUM){
+        token = expect(NUM);
+        new_variable(token.lexeme);
+        set_value(token.lexeme, stoi(token.lexeme)); // constants/literals should just have their lexeme as their integer value.
+    }else{
         raise_error();
     }
+
+    return location(token);
 }
 
-void parse_op(){
+ArithmeticOperatorType parse_op(){
     // op -> PLUS | MINUS | MULT | DIV
     TokenType t = lexer.peek(1).token_type;
+    Token token;
     switch(t){
         case PLUS:
             expect(PLUS);
+            return OPERATOR_PLUS;
             break;
         case MINUS:
             expect(MINUS);
+            return OPERATOR_MINUS;
             break;
         case MULT:
             expect(MULT);
+            return OPERATOR_MULT;
             break;
         case DIV:
             expect(DIV);
+            return OPERATOR_DIV;
             break;
         default:
             raise_error();
@@ -191,19 +225,28 @@ void parse_op(){
 }
 
 InstructionNode* parse_output_stmt(InstructionNode* stmt){
+    string output_var; // name of variable to be outputted
+    stmt->type = OUT;
     // output_stmt = OUTPUT ID SEMICOLON
     expect(OUTPUT);
-    expect(ID);
+
+    output_var = expect(ID).lexeme;
+    stmt->output_inst.var_index = location(output_var);
+
     expect(SEMICOLON);
     return NULL; // placeholder
 }
 
 InstructionNode* parse_input_stmt(InstructionNode* stmt){
     // input_stmt = INPUT ID SEMICOLON
+    Token t;
+    stmt->type = IN;
     expect(INPUT);
-    expect(ID);
+    t = expect(ID);
     expect(SEMICOLON);
     return NULL; // placeholder
+
+    stmt->input_inst.var_index = location(t);
 }
 
 InstructionNode* parse_while_stmt(InstructionNode* stmt){
