@@ -8,13 +8,9 @@
 
 #include <string>
 #include <vector>
-#include <map>
-
-using namespace std;
 
 extern int mem[1000];
 extern int next_available;
-extern map<string, int> loctable;
 
 extern std::vector<int> inputs;
 extern int next_input;
