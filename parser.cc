@@ -1,4 +1,12 @@
 #include "parser.h"
+/*
+Alexander Ono
+CSE340 - Bazzi
+Project #3
+11/24/2022
+
+This file mainly contains literal parsing functions.
+*/
 
 LexicalAnalyzer lexer;  // hopefully this won't cause issues, but I might need to combine parser.cc and other.cc into 1 file.
 map<string, int> loctable;

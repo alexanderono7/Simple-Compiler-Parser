@@ -1,5 +1,13 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
+/*
+Alexander Ono
+CSE340 - Bazzi
+Project #3
+11/24/2022
+
+This file contains forward declarations for parser.cc and other.cc
+*/
 
 #include <cstdlib>
 #include <iostream>
