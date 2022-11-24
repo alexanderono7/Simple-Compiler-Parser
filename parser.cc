@@ -231,6 +231,7 @@ ArithmeticOperatorType parse_op(){
             raise_error();
             break;
     }
+    raise_error();
     return OPERATOR_NONE; // this should never be returned.
 }
 
@@ -272,7 +273,7 @@ InstructionNode* parse_if_stmt(InstructionNode* stmt){
     expect(IF);
     parse_condition();
     parse_body();
-    return NULL; // placeholder
+    return stmt; // return head of the if statement
 }
 
 void parse_condition(){
