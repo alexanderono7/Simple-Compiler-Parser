@@ -5,7 +5,7 @@ This file contains functions which are not parse_whatever functions.
 Might need to combine this with parser.cc if problems keep arising... damn my lack of C++ file management understanding.
 */
 
-map<string, int> loctable;
+//map<string, int> loctable;
 
 // Return location in mem of given variable name
 int location(string name){

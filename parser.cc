@@ -1,6 +1,7 @@
 #include "parser.h"
 
 LexicalAnalyzer lexer;  // hopefully this won't cause issues, but I might need to combine parser.cc and other.cc into 1 file.
+map<string, int> loctable;
 
 /* 
 As stated in the project document, there shouldn't be any syntax/semantic errors in any
@@ -25,7 +26,7 @@ Token expect(TokenType expected_type){
 // Equivalent to parse_program?
 struct InstructionNode * parse_generate_intermediate_representation()
 {
-    cout << "program executed!\n"; // remove later
+    //cout << "program executed!\n"; // remove later
     // program -> var_section body inputs
     InstructionNode* head;
 
@@ -34,7 +35,7 @@ struct InstructionNode * parse_generate_intermediate_representation()
     head = parse_body();
     parse_inputs();
     
-    cout << "program finished.\n"; // remove later
+    //cout << "program finished.\n"; // remove later
     return head; // should return head node to intermediate code
 }
 
@@ -222,6 +223,7 @@ ArithmeticOperatorType parse_op(){
             raise_error();
             break;
     }
+    return OPERATOR_NONE; // this should never be returned.
 }
 
 InstructionNode* parse_output_stmt(InstructionNode* stmt){
@@ -244,9 +246,9 @@ InstructionNode* parse_input_stmt(InstructionNode* stmt){
     expect(INPUT);
     t = expect(ID);
     expect(SEMICOLON);
-    return NULL; // placeholder
 
     stmt->input_inst.var_index = location(t);
+    return stmt; // placeholder
 }
 
 InstructionNode* parse_while_stmt(InstructionNode* stmt){

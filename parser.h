@@ -14,8 +14,10 @@
 #include <vector>
 #include "lexer.h"
 #include "execute.h"
+#include <map>
 
 using namespace std;
+extern map<string, int> loctable;
 
 
 // maybe don't use this?
