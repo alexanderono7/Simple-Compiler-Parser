@@ -13,6 +13,18 @@ Might need to combine this with parser.cc if problems keep arising... damn my la
 
 //map<string, int> loctable;
 
+/* 
+As stated in the project document, there shouldn't be any syntax/semantic errors in any
+test cases, but I've included this so I know if my code is messing up somewhere.
+*/
+void raise_error(){
+    readAndPrintAllInput();
+    cout << "\nERROR ERROR ERROR!\n";
+    cout << "\nERROR ERROR ERROR!\n";
+    cout << "\nERROR ERROR ERROR!\n";
+    exit(1);
+}
+
 // Return location in mem of given variable name
 int location(string name){
     return loctable[name];

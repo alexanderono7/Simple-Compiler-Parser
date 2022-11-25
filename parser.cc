@@ -11,17 +11,6 @@ This file mainly contains literal parsing functions.
 LexicalAnalyzer lexer;  // hopefully this won't cause issues, but I might need to combine parser.cc and other.cc into 1 file.
 map<string, int> loctable;
 
-/* 
-As stated in the project document, there shouldn't be any syntax/semantic errors in any
-test cases, but I've included this so I know if my code is messing up somewhere.
-*/
-void raise_error(){
-    readAndPrintAllInput();
-    cout << "\nERROR ERROR ERROR!\n";
-    cout << "\nERROR ERROR ERROR!\n";
-    cout << "\nERROR ERROR ERROR!\n";
-    exit(1);
-}
 
 
 Token expect(TokenType expected_type){
@@ -34,7 +23,7 @@ Token expect(TokenType expected_type){
 // Equivalent to parse_program?
 struct InstructionNode * parse_generate_intermediate_representation()
 {
-    cout << "program executed!\n"; // remove later
+    //cout << "program executed!\n"; // remove later
     // program -> var_section body inputs
     InstructionNode* head;
 
@@ -42,7 +31,7 @@ struct InstructionNode * parse_generate_intermediate_representation()
     parse_var_section();
     head = parse_body();
     parse_inputs();
-    
+
     //cout << "program finished.\n"; // remove later
     return head; // should return head node to intermediate code
 }
@@ -283,7 +272,6 @@ InstructionNode* parse_if_stmt(InstructionNode* inst){
     //InstructionNode* nope = new InstructionNode;
     InstructionNode* nope = newNode();
     nope->type = NOOP;
-    nope->next = nullptr;
     // append NOOP node
 
     return inst; // return head of the if statement
