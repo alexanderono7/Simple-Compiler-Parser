@@ -54,3 +54,11 @@ void add_input(Token t){
     int val = stoi(t.lexeme);
     inputs.push_back(val);
 }
+
+// Kind of an "initializer" for Instruction Nodes
+// I don't think I can make a real initializer because I can't modify execute.h
+InstructionNode* newNode(){
+    InstructionNode* inst = new InstructionNode;
+    inst->next = nullptr;
+    return inst;
+}

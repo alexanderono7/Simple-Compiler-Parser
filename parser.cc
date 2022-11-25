@@ -34,7 +34,7 @@ Token expect(TokenType expected_type){
 // Equivalent to parse_program?
 struct InstructionNode * parse_generate_intermediate_representation()
 {
-    //cout << "program executed!\n"; // remove later
+    cout << "program executed!\n"; // remove later
     // program -> var_section body inputs
     InstructionNode* head;
 
@@ -106,7 +106,8 @@ InstructionNode* parse_stmt_list(){
 
 InstructionNode* parse_stmt(){
     // I believe new instruction nodes should be instanciated here.
-    InstructionNode* stmt = new InstructionNode();
+    //InstructionNode* stmt = new InstructionNode();
+    InstructionNode* stmt = newNode();
 
     TokenType t = lexer.peek(1).token_type;
     switch(t){
@@ -269,41 +270,55 @@ InstructionNode* parse_while_stmt(InstructionNode* stmt){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_if_stmt(InstructionNode* stmt){
+InstructionNode* parse_if_stmt(InstructionNode* inst){
     // if_stmt -> IF condition body
-    stmt->type = CJMP;
+    inst->type = CJMP;
     expect(IF);
 
 
-    parse_condition(stmt);
-    parse_body();
-    return stmt; // return head of the if statement
+    parse_condition(inst); // assigns conditional fields for `stmt`
+    inst->next = parse_body();
+
+    // Instanciate new NOOP instruction node.
+    //InstructionNode* nope = new InstructionNode;
+    InstructionNode* nope = newNode();
+    nope->type = NOOP;
+    nope->next = nullptr;
+    // append NOOP node
+
+    return inst; // return head of the if statement
 }
 
 void parse_condition(InstructionNode* stmt){
     // condition -> primary relop primary
     stmt->cjmp_inst.opernd1_index = parse_primary();
-    parse_relop();
+    stmt->cjmp_inst.condition_op = parse_relop();
     stmt->cjmp_inst.opernd1_index = parse_primary();
 }
 
-void parse_relop(){
+ConditionalOperatorType parse_relop(){
     // relop -> GREATER | LESS | NOTEQUAL
     TokenType t = lexer.peek(1).token_type;
     switch(t){
         case GREATER:
             expect(GREATER);
+            return CONDITION_GREATER;
             break;
         case LESS:
             expect(LESS);
+            return CONDITION_LESS;
             break;
         case NOTEQUAL:
             expect(NOTEQUAL);
+            return CONDITION_NOTEQUAL;
             break;
         default:
             raise_error();
             break;
     }
+
+    raise_error();
+    return CONDITION_NOTEQUAL; // program should never reach this point.
 }
 
 InstructionNode* parse_switch_stmt(InstructionNode* stmt){
@@ -327,8 +342,8 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
 
 InstructionNode* parse_for_stmt(InstructionNode* stmt){
     // for_stmt -> FOR LPAREN...
-    InstructionNode* assign1 = new InstructionNode();
-    InstructionNode* assign2 = new InstructionNode();
+    InstructionNode* assign1 = newNode();
+    InstructionNode* assign2 = newNode();
     expect(FOR);
     expect(LPAREN);
     parse_assign_stmt(assign1);
