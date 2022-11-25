@@ -62,3 +62,11 @@ InstructionNode* newNode(){
     inst->next = nullptr;
     return inst;
 }
+
+// Given the head to a linked list of instruction nodes, return the tail node.
+InstructionNode* findTail(InstructionNode* node){
+    while(node->next != nullptr){
+        node = node->next;
+    }
+    return node;
+}
