@@ -23,11 +23,11 @@
         },
 
         {
-            "name": "debug w/ input",
+            "name": "if statement input debug",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/a.out",
-            "args": ["<", "${fileDirname}/my_testcases/oppbasic.txt"],
+            "args": ["<", "${fileDirname}/provided_tests/test_control_if1.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
