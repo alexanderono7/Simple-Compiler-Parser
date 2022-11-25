@@ -262,25 +262,29 @@ InstructionNode* parse_input_stmt(InstructionNode* stmt){
 
 InstructionNode* parse_while_stmt(InstructionNode* stmt){
     // while_stmt -> WHILE condition body
+    stmt->type = CJMP;
     expect(WHILE);
-    parse_condition();
+    parse_condition(stmt);
     parse_body();
     return NULL; // placeholder
 }
 
 InstructionNode* parse_if_stmt(InstructionNode* stmt){
     // if_stmt -> IF condition body
+    stmt->type = CJMP;
     expect(IF);
-    parse_condition();
+
+
+    parse_condition(stmt);
     parse_body();
     return stmt; // return head of the if statement
 }
 
-void parse_condition(){
+void parse_condition(InstructionNode* stmt){
     // condition -> primary relop primary
-    parse_primary();
+    stmt->cjmp_inst.opernd1_index = parse_primary();
     parse_relop();
-    parse_primary();
+    stmt->cjmp_inst.opernd1_index = parse_primary();
 }
 
 void parse_relop(){
@@ -328,7 +332,7 @@ InstructionNode* parse_for_stmt(InstructionNode* stmt){
     expect(FOR);
     expect(LPAREN);
     parse_assign_stmt(assign1);
-    parse_condition();
+    parse_condition(stmt);
     expect(SEMICOLON);
     parse_assign_stmt(assign2);
     expect(RPAREN);

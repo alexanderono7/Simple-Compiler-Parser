@@ -51,7 +51,7 @@ InstructionNode* parse_output_stmt(InstructionNode* stmt);
 InstructionNode* parse_input_stmt(InstructionNode* stmt);
 InstructionNode* parse_while_stmt(InstructionNode* stmt);
 InstructionNode* parse_if_stmt(InstructionNode* stmt);
-void parse_condition();
+void parse_condition(InstructionNode* stmt);
 void parse_relop();
 InstructionNode* parse_switch_stmt(InstructionNode* stmt);
 InstructionNode* parse_for_stmt(InstructionNode* stmt);
