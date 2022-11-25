@@ -269,10 +269,10 @@ InstructionNode* parse_if_stmt(InstructionNode* inst){
     inst->next = parse_body();
 
     // Instanciate new NOOP instruction node.
-    //InstructionNode* nope = new InstructionNode;
     InstructionNode* nope = newNode();
     nope->type = NOOP;
-    // append NOOP node
+    findTail(inst->next)->next = nope; // append NOOP node to body of if statement
+    inst->cjmp_inst.target = nope; // CJMP target is NOOP node.
 
     return inst; // return head of the if statement
 }
