@@ -71,5 +71,6 @@ void assign_next_input(string name);
 void add_input(Token t);
 void set_value(string name, int value);
 InstructionNode* newNode();
+InstructionNode* findTail(InstructionNode* node);
 
 #endif
