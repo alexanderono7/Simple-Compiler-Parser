@@ -340,9 +340,9 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
 
 InstructionNode* parse_for_stmt(InstructionNode* inst){
     // for_stmt -> FOR LPAREN...
-    InstructionNode* assign1 = newNode(); // head of for loop
-    InstructionNode* assign2 = newNode();
+    InstructionNode* assign1 = inst; // head of for loop
     InstructionNode* cjmp = newNode();
+    InstructionNode* assign2 = newNode();
     InstructionNode* jmp = newNode();
     InstructionNode* nope = newNode();
 
