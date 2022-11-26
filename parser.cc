@@ -263,8 +263,8 @@ InstructionNode* parse_while_stmt(InstructionNode* inst){
     // Instanciate new NOOP node.
     InstructionNode* nope = newNode();
     nope->type = NOOP;
-    findTail(jmp)->next = nope; // attach NOOP node to list of instructions after JMP node (?)
-    inst->cjmp_inst.target = nope;
+    findTail(jmp)->next = nope; // append NOOP node to list of instructions after JMP node (?)
+    inst->cjmp_inst.target = nope; // CJMP node's target is NOOP node
 
     return inst; // placeholder
 }
@@ -288,6 +288,7 @@ InstructionNode* parse_if_stmt(InstructionNode* inst){
 
 void parse_condition(InstructionNode* stmt){
     // condition -> primary relop primary
+    stmt->type = CJMP;
     stmt->cjmp_inst.opernd1_index = parse_primary();
     stmt->cjmp_inst.condition_op = parse_relop();
     stmt->cjmp_inst.opernd2_index = parse_primary();
@@ -337,20 +338,46 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_for_stmt(InstructionNode* stmt){
+InstructionNode* parse_for_stmt(InstructionNode* inst){
     // for_stmt -> FOR LPAREN...
-    InstructionNode* assign1 = newNode();
+    InstructionNode* assign1 = newNode(); // head of for loop
     InstructionNode* assign2 = newNode();
+    InstructionNode* cjmp = newNode();
+    InstructionNode* jmp = newNode();
+    InstructionNode* nope = newNode();
+
     expect(FOR);
     expect(LPAREN);
+
+    // assign1 node
     parse_assign_stmt(assign1);
-    parse_condition(stmt);
+    assign1->next = cjmp;
+
+    // cjmp node
+    parse_condition(cjmp);
+    cjmp->cjmp_inst.target = nope;
+
     expect(SEMICOLON);
+
+    // assign2 node
     parse_assign_stmt(assign2);
+    assign2->next = jmp;
+
+    // jmp node
+    jmp->type = JMP;
+    jmp->next = nope;
+    jmp->jmp_inst.target = cjmp;
+
     expect(RPAREN);
 
-    parse_body();
-    return NULL; // placeholder
+    // body of for loop
+    cjmp->next = parse_body();
+    findTail(cjmp)->next = assign2;
+
+    // noop node
+    nope->type = NOOP;
+
+    return assign1; // return head of for loop
 }
 
 void parse_case_list(){
