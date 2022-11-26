@@ -78,13 +78,12 @@ InstructionNode* parse_stmt_list(){
     inst = parse_stmt();
 
 
-    // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     TokenType t = lexer.peek(1).token_type;
+    // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
     if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt) to see if stmt_list continues
         instList = parse_stmt_list(); 
-        //inst->next = instList; 
-        findTail(inst)->next = instList; // append instList to inst;
+        findTail(inst)->next = instList; // append instList to the end of `inst`
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
         ;
@@ -248,13 +247,26 @@ InstructionNode* parse_input_stmt(InstructionNode* stmt){
     return stmt; // placeholder
 }
 
-InstructionNode* parse_while_stmt(InstructionNode* stmt){
+InstructionNode* parse_while_stmt(InstructionNode* inst){
     // while_stmt -> WHILE condition body
-    stmt->type = CJMP;
+    inst->type = CJMP;
     expect(WHILE);
-    parse_condition(stmt);
-    parse_body();
-    return NULL; // placeholder
+
+    parse_condition(inst);
+    inst->next = parse_body();
+
+    // Instanciate new JMP instruction node.
+    InstructionNode* jmp = newNode();
+    jmp->type = JMP;
+    jmp->jmp_inst.target = inst;
+    findTail(inst->next)->next = jmp; // append JMP node to body of WHILE loop
+    // Instanciate new NOOP node.
+    InstructionNode* nope = newNode();
+    nope->type = NOOP;
+    findTail(jmp)->next = nope; // attach NOOP node to list of instructions after JMP node (?)
+    inst->cjmp_inst.target = nope;
+
+    return inst; // placeholder
 }
 
 InstructionNode* parse_if_stmt(InstructionNode* inst){
