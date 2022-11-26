@@ -319,25 +319,6 @@ ConditionalOperatorType parse_relop(){
     return CONDITION_NOTEQUAL; // program should never reach this point.
 }
 
-InstructionNode* parse_switch_stmt(InstructionNode* stmt){
-    // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
-    // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
-    expect(SWITCH);
-    expect(ID);
-    expect(LBRACE);
-    parse_case_list();
-    TokenType t = lexer.peek(1).token_type;
-    if(t==DEFAULT){
-        parse_default_case();
-    }else if(t==RBRACE){
-        ; // do nothing, fix later.
-    }else{
-        raise_error();
-    }
-    expect(RBRACE);
-    return NULL; // placeholder
-}
-
 InstructionNode* parse_for_stmt(InstructionNode* inst){
     // for_stmt -> FOR LPAREN...
     InstructionNode* assign1 = inst; // head of for loop
@@ -379,6 +360,26 @@ InstructionNode* parse_for_stmt(InstructionNode* inst){
 
     return assign1; // return head of for loop
 }
+
+InstructionNode* parse_switch_stmt(InstructionNode* stmt){
+    // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
+    // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
+    expect(SWITCH);
+    expect(ID);
+    expect(LBRACE);
+    parse_case_list();
+    TokenType t = lexer.peek(1).token_type;
+    if(t==DEFAULT){
+        parse_default_case();
+    }else if(t==RBRACE){
+        ; // do nothing, fix later.
+    }else{
+        raise_error();
+    }
+    expect(RBRACE);
+    return NULL; // placeholder
+}
+
 
 void parse_case_list(){
     // case_list -> case case_list | case
