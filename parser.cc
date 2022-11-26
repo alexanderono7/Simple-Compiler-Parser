@@ -83,7 +83,8 @@ InstructionNode* parse_stmt_list(){
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
     if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt) to see if stmt_list continues
         instList = parse_stmt_list(); 
-        inst->next = instList; // append instList to inst;
+        //inst->next = instList; 
+        findTail(inst)->next = instList; // append instList to inst;
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
         ;
@@ -177,12 +178,9 @@ void parse_expr(InstructionNode* stmt){
 int parse_primary(){
     // primary -> ID | NUM
     Token t = lexer.peek(1);
-
     Token token;
 
-
     if(t.token_type == ID){
-
         token = expect(ID);
         new_variable(token.lexeme);
     }else if(t.token_type == NUM){
@@ -264,7 +262,6 @@ InstructionNode* parse_if_stmt(InstructionNode* inst){
     inst->type = CJMP;
     expect(IF);
 
-
     parse_condition(inst); // assigns conditional fields for `stmt`
     inst->next = parse_body();
 
@@ -281,7 +278,7 @@ void parse_condition(InstructionNode* stmt){
     // condition -> primary relop primary
     stmt->cjmp_inst.opernd1_index = parse_primary();
     stmt->cjmp_inst.condition_op = parse_relop();
-    stmt->cjmp_inst.opernd1_index = parse_primary();
+    stmt->cjmp_inst.opernd2_index = parse_primary();
 }
 
 ConditionalOperatorType parse_relop(){
