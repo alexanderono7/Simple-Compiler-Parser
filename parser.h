@@ -51,8 +51,8 @@ InstructionNode* parse_output_stmt(InstructionNode* stmt);
 InstructionNode* parse_input_stmt(InstructionNode* stmt);
 InstructionNode* parse_while_stmt(InstructionNode* stmt);
 InstructionNode* parse_if_stmt(InstructionNode* stmt);
-void parse_condition();
-void parse_relop();
+void parse_condition(InstructionNode* stmt);
+ConditionalOperatorType parse_relop();
 InstructionNode* parse_switch_stmt(InstructionNode* stmt);
 InstructionNode* parse_for_stmt(InstructionNode* stmt);
 void parse_case_list();
@@ -70,5 +70,7 @@ void new_variable(string name);
 void assign_next_input(string name);
 void add_input(Token t);
 void set_value(string name, int value);
+InstructionNode* newNode();
+InstructionNode* findTail(InstructionNode* node);
 
 #endif

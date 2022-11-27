@@ -13,6 +13,18 @@ Might need to combine this with parser.cc if problems keep arising... damn my la
 
 //map<string, int> loctable;
 
+/* 
+As stated in the project document, there shouldn't be any syntax/semantic errors in any
+test cases, but I've included this so I know if my code is messing up somewhere.
+*/
+void raise_error(){
+    readAndPrintAllInput();
+    cout << "\nERROR ERROR ERROR!\n";
+    cout << "\nERROR ERROR ERROR!\n";
+    cout << "\nERROR ERROR ERROR!\n";
+    exit(1);
+}
+
 // Return location in mem of given variable name
 int location(string name){
     return loctable[name];
@@ -53,4 +65,20 @@ void assign_next_input(string name){
 void add_input(Token t){
     int val = stoi(t.lexeme);
     inputs.push_back(val);
+}
+
+// Kind of an "initializer" for Instruction Nodes
+// I don't think I can make a real initializer because I can't modify execute.h
+InstructionNode* newNode(){
+    InstructionNode* inst = new InstructionNode;
+    inst->next = nullptr;
+    return inst;
+}
+
+// Given the head to a linked list of instruction nodes, return the tail node.
+InstructionNode* findTail(InstructionNode* node){
+    while(node->next != nullptr){
+        node = node->next;
+    }
+    return node;
 }

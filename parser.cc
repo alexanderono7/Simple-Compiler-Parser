@@ -11,17 +11,6 @@ This file mainly contains literal parsing functions.
 LexicalAnalyzer lexer;  // hopefully this won't cause issues, but I might need to combine parser.cc and other.cc into 1 file.
 map<string, int> loctable;
 
-/* 
-As stated in the project document, there shouldn't be any syntax/semantic errors in any
-test cases, but I've included this so I know if my code is messing up somewhere.
-*/
-void raise_error(){
-    readAndPrintAllInput();
-    cout << "\nERROR ERROR ERROR!\n";
-    cout << "\nERROR ERROR ERROR!\n";
-    cout << "\nERROR ERROR ERROR!\n";
-    exit(1);
-}
 
 
 Token expect(TokenType expected_type){
@@ -42,7 +31,7 @@ struct InstructionNode * parse_generate_intermediate_representation()
     parse_var_section();
     head = parse_body();
     parse_inputs();
-    
+
     //cout << "program finished.\n"; // remove later
     return head; // should return head node to intermediate code
 }
@@ -89,12 +78,12 @@ InstructionNode* parse_stmt_list(){
     inst = parse_stmt();
 
 
-    // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     TokenType t = lexer.peek(1).token_type;
+    // FIRST(stmt) = {ID, "output", "input", WHILE, IF, SWITCH, FOR}
     set<TokenType> stmt_fs({ID, OUTPUT, INPUT, WHILE, IF, SWITCH, FOR});  // first set of stmt
     if(stmt_fs.count(t)){ // check if t.token_type is in FIRST(stmt) to see if stmt_list continues
         instList = parse_stmt_list(); 
-        inst->next = instList; // append instList to inst;
+        findTail(inst)->next = instList; // append instList to the end of `inst`
     }else if(t==RBRACE){ // is this really accurate?
         // end of statement list
         ;
@@ -106,7 +95,8 @@ InstructionNode* parse_stmt_list(){
 
 InstructionNode* parse_stmt(){
     // I believe new instruction nodes should be instanciated here.
-    InstructionNode* stmt = new InstructionNode();
+    //InstructionNode* stmt = new InstructionNode();
+    InstructionNode* stmt = newNode();
 
     TokenType t = lexer.peek(1).token_type;
     switch(t){
@@ -187,12 +177,9 @@ void parse_expr(InstructionNode* stmt){
 int parse_primary(){
     // primary -> ID | NUM
     Token t = lexer.peek(1);
-
     Token token;
 
-
     if(t.token_type == ID){
-
         token = expect(ID);
         new_variable(token.lexeme);
     }else if(t.token_type == NUM){
@@ -260,46 +247,118 @@ InstructionNode* parse_input_stmt(InstructionNode* stmt){
     return stmt; // placeholder
 }
 
-InstructionNode* parse_while_stmt(InstructionNode* stmt){
+InstructionNode* parse_while_stmt(InstructionNode* inst){
     // while_stmt -> WHILE condition body
+    inst->type = CJMP;
     expect(WHILE);
-    parse_condition();
-    parse_body();
-    return NULL; // placeholder
+
+    parse_condition(inst);
+    inst->next = parse_body();
+
+    // Instanciate new JMP instruction node.
+    InstructionNode* jmp = newNode();
+    jmp->type = JMP;
+    jmp->jmp_inst.target = inst;
+    findTail(inst->next)->next = jmp; // append JMP node to body of WHILE loop
+    // Instanciate new NOOP node.
+    InstructionNode* nope = newNode();
+    nope->type = NOOP;
+    findTail(jmp)->next = nope; // append NOOP node to list of instructions after JMP node (?)
+    inst->cjmp_inst.target = nope; // CJMP node's target is NOOP node
+
+    return inst; // placeholder
 }
 
-InstructionNode* parse_if_stmt(InstructionNode* stmt){
+InstructionNode* parse_if_stmt(InstructionNode* inst){
     // if_stmt -> IF condition body
+    inst->type = CJMP;
     expect(IF);
-    parse_condition();
-    parse_body();
-    return stmt; // return head of the if statement
+
+    parse_condition(inst); // assigns conditional fields for `stmt`
+    inst->next = parse_body();
+
+    // Instanciate new NOOP instruction node.
+    InstructionNode* nope = newNode();
+    nope->type = NOOP;
+    findTail(inst->next)->next = nope; // append NOOP node to body of if statement
+    inst->cjmp_inst.target = nope; // CJMP target is NOOP node.
+
+    return inst; // return head of the if statement
 }
 
-void parse_condition(){
+void parse_condition(InstructionNode* stmt){
     // condition -> primary relop primary
-    parse_primary();
-    parse_relop();
-    parse_primary();
+    stmt->type = CJMP;
+    stmt->cjmp_inst.opernd1_index = parse_primary();
+    stmt->cjmp_inst.condition_op = parse_relop();
+    stmt->cjmp_inst.opernd2_index = parse_primary();
 }
 
-void parse_relop(){
+ConditionalOperatorType parse_relop(){
     // relop -> GREATER | LESS | NOTEQUAL
     TokenType t = lexer.peek(1).token_type;
     switch(t){
         case GREATER:
             expect(GREATER);
+            return CONDITION_GREATER;
             break;
         case LESS:
             expect(LESS);
+            return CONDITION_LESS;
             break;
         case NOTEQUAL:
             expect(NOTEQUAL);
+            return CONDITION_NOTEQUAL;
             break;
         default:
             raise_error();
             break;
     }
+
+    raise_error();
+    return CONDITION_NOTEQUAL; // program should never reach this point.
+}
+
+InstructionNode* parse_for_stmt(InstructionNode* inst){
+    // for_stmt -> FOR LPAREN...
+    InstructionNode* assign1 = inst; // head of for loop
+    InstructionNode* cjmp = newNode();
+    InstructionNode* assign2 = newNode();
+    InstructionNode* jmp = newNode();
+    InstructionNode* nope = newNode();
+
+    expect(FOR);
+    expect(LPAREN);
+
+    // assign1 node
+    parse_assign_stmt(assign1);
+    assign1->next = cjmp;
+
+    // cjmp node
+    parse_condition(cjmp);
+    cjmp->cjmp_inst.target = nope;
+
+    expect(SEMICOLON);
+
+    // assign2 node
+    parse_assign_stmt(assign2);
+    assign2->next = jmp;
+
+    // jmp node
+    jmp->type = JMP;
+    jmp->next = nope;
+    jmp->jmp_inst.target = cjmp;
+
+    expect(RPAREN);
+
+    // body of for loop
+    cjmp->next = parse_body();
+    findTail(cjmp)->next = assign2;
+
+    // noop node
+    nope->type = NOOP;
+
+    return assign1; // return head of for loop
 }
 
 InstructionNode* parse_switch_stmt(InstructionNode* stmt){
@@ -321,21 +380,6 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     return NULL; // placeholder
 }
 
-InstructionNode* parse_for_stmt(InstructionNode* stmt){
-    // for_stmt -> FOR LPAREN...
-    InstructionNode* assign1 = new InstructionNode();
-    InstructionNode* assign2 = new InstructionNode();
-    expect(FOR);
-    expect(LPAREN);
-    parse_assign_stmt(assign1);
-    parse_condition();
-    expect(SEMICOLON);
-    parse_assign_stmt(assign2);
-    expect(RPAREN);
-
-    parse_body();
-    return NULL; // placeholder
-}
 
 void parse_case_list(){
     // case_list -> case case_list | case

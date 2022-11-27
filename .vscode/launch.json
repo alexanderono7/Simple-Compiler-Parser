@@ -23,11 +23,11 @@
         },
 
         {
-            "name": "debug w/ input",
+            "name": "if statement input debug",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/a.out",
-            "args": ["<", "${fileDirname}/my_testcases/oppbasic.txt"],
+            "args": ["<", "${fileDirname}/provided_tests/test_control_if1.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -48,6 +48,46 @@
             "request": "launch",
             "program": "${fileDirname}/a.out",
             "args": ["<", "${fileDirname}/provided_tests/test_assignment_basic1.txt"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "makebuild",
+            "miDebuggerPath": "/usr/bin/gdb",
+        },
+        {
+            "name": "while statement input debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/a.out",
+            "args": ["<", "${fileDirname}/provided_tests/test_control_while1.txt"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "makebuild",
+            "miDebuggerPath": "/usr/bin/gdb",
+        },
+        {
+            "name": "for statement input debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/a.out",
+            "args": ["<", "${fileDirname}/provided_tests/test_control_for1.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
