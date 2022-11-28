@@ -1,0 +1,27 @@
+a, b, c, d, e;
+{
+    input a;
+    b = 11;
+    c = 22;
+    d = 33;
+    e = 99;
+    SWITCH a {
+        CASE 1:
+            {
+                output b;
+            }
+        CASE 2:
+            {
+                output c;
+            }
+        CASE 3:
+            {
+                output d;
+            }
+        DEFAULT:
+            {
+                output e;
+            }
+    }
+}
+3
