@@ -102,5 +102,25 @@
             "preLaunchTask": "makebuild",
             "miDebuggerPath": "/usr/bin/gdb",
         },
+        {
+            "name": "switch statement input debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/a.out",
+            "args": ["<", "${fileDirname}/my_tests/switch_test.txt"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "makebuild",
+            "miDebuggerPath": "/usr/bin/gdb",
+        },
     ]
 }

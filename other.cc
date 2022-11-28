@@ -67,6 +67,12 @@ void add_input(Token t){
     inputs.push_back(val);
 }
 
+// Add constant/literal value to mem
+void add_constant_num(string num){
+    new_variable(num);
+    set_value(num, stoi(num));
+}
+
 // Kind of an "initializer" for Instruction Nodes
 // I don't think I can make a real initializer because I can't modify execute.h
 InstructionNode* newNode(){

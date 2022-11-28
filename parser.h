@@ -72,5 +72,6 @@ void add_input(Token t);
 void set_value(string name, int value);
 InstructionNode* newNode();
 InstructionNode* findTail(InstructionNode* node);
+void add_constant_num(string num);
 
 #endif

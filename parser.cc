@@ -362,7 +362,9 @@ InstructionNode* parse_for_stmt(InstructionNode* inst){
 }
 
 InstructionNode* parse_switch_stmt(InstructionNode* stmt){
+    stmt->type = NOOP;
     InstructionNode* nope = newNode();
+    nope->type = NOOP;
     InstructionNode* head;
     // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
     // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
@@ -380,7 +382,8 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
         raise_error();
     }
     expect(RBRACE);
-    return NULL; // placeholder
+    stmt->next = head;
+    return head; // placeholder
 }
 
 InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
@@ -395,7 +398,7 @@ InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
         findTail(acase)->next = caseList; // append caseList to the end of `case`
     }else if(t==DEFAULT){
         ; // default case + end of case list
-        parse_default_case(nope);
+        findTail(acase)->next = parse_default_case(nope);
     }else if(t==RBRACE){
         ; // end of case list
     }else{
@@ -422,7 +425,11 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     casenop->type = NOOP;
 
     expect(CASE);
-    expect(NUM);
+    // add num of case to mem as constant value
+    string num = expect(NUM).lexeme;
+    add_constant_num(num);
+    cjmp->cjmp_inst.opernd2_index = location(num); // add num as 2nd operand of cjmp node
+    
     expect(COLON);
     body = parse_body();
     findTail(body)->next = jmp; // append unique jmp node to the end of the case body
