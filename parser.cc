@@ -413,8 +413,8 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     InstructionNode* casenop = newNode();
     cjmp->type = CJMP; // actually not really sure if this is correct...
     // cjmp->cjmp_inst. // ...ahhh fuck this doesn't work. I think we need another NOOP @ the end of of every case block.
+    // NEED TO FIX CJMP HERE!!!
     cjmp->cjmp_inst.opernd1_index = location(scrutinee);
-    cjmp->cjmp_inst.opernd2_index = location(scrutinee);
     cjmp->cjmp_inst.condition_op = CONDITION_NOTEQUAL; // need to reverse target and next of CJMP because no EQUAL condition exists, apparently.
 
     jmp->type = JMP;
@@ -426,7 +426,9 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     expect(COLON);
     body = parse_body();
     findTail(body)->next = jmp; // append unique jmp node to the end of the case body
-    findTail(body)->next = casenop; // append case noop node to end of the case body
+    findTail(body)->next = casenop; // append case noop node to end of the case body 
+
+    // note that because we don't have CONDITION_NOTEQUAL we reverse the `next` and `target` variables of the case's CJMP node.
     cjmp->next = casenop;
     cjmp->cjmp_inst.target = body;
     return cjmp;
