@@ -367,13 +367,13 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
     // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
     expect(SWITCH);
-    expect(ID);
+    string scrutinee = expect(ID).lexeme; // scrutinee is the value to be matched on in a switch statement
     expect(LBRACE);
 
-    head = parse_case_list();
+    head = parse_case_list(scrutinee, nope);
     TokenType t = lexer.peek(1).token_type;
     if(t==DEFAULT){
-        parse_default_case();
+        parse_default_case(nope);
     }else if(t==RBRACE){
         ; // do nothing, fix later.
     }else{
@@ -384,31 +384,50 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
 }
 
 
-InstructionNode* parse_case_list(){
+InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
     // case_list -> case case_list | case
     InstructionNode* acase; // one single case instruction node
     InstructionNode* caseList; // list of case instruction nodes
-    acase = parse_case();
+    acase = parse_case(scrutinee, nope);
 
     TokenType t = lexer.peek(1).token_type;
     if(t==CASE){
-        caseList = parse_case_list();
+        caseList = parse_case_list(scrutinee, nope);
         findTail(acase)->next = caseList; // append caseList to the end of `case`
     }else if(t==DEFAULT or t==RBRACE){
         ; // end of case list
     }else{
         raise_error();
     }
+    return acase; // is this correct? double check with stmt_list
 }
 
-InstructionNode* parse_case(){
+InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
+    // case -> CASE NUM COLON body
+    // note that NUM is the value in question being checked!
+    InstructionNode* cjmp = newNode(); // should be head of case block
+    InstructionNode* body;
+    InstructionNode* jmp = newNode();
+    InstructionNode* casenop = newNode();
+    cjmp->type = CJMP; // actually not really sure if this is correct...
+    // cjmp->cjmp_inst. // ...ahhh fuck this doesn't work. I think we need another NOOP @ the end of of every case block.
+    cjmp->cjmp_inst.opernd1_index = location(scrutinee);
+    cjmp->cjmp_inst.condition_op = CONDITION_EQUAL;
+
+    jmp->type = JMP;
+    jmp->jmp_inst.target = finalnop; // (for switch statement) jmp points to `finalnop` node at the end of switch
+    casenop->type = NOOP;
+
     expect(CASE);
     expect(NUM);
     expect(COLON);
-    parse_body();
+    body = parse_body();
+    findTail(body)->next = jmp; // append unique jmp node to the end of the case body
+    findTail(body)->next = casenop; // append case noop node to end of the case body
+    return cjmp;
 }
 
-InstructionNode* parse_default_case(){
+InstructionNode* parse_default_case(InstructionNode* nope){
     expect(DEFAULT);
     expect(COLON);
     parse_body();
