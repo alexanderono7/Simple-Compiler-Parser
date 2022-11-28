@@ -383,7 +383,6 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     return NULL; // placeholder
 }
 
-
 InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
     // case_list -> case case_list | case
     InstructionNode* acase; // one single case instruction node
@@ -394,7 +393,10 @@ InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
     if(t==CASE){
         caseList = parse_case_list(scrutinee, nope);
         findTail(acase)->next = caseList; // append caseList to the end of `case`
-    }else if(t==DEFAULT or t==RBRACE){
+    }else if(t==DEFAULT){
+        ; // default case + end of case list
+        parse_default_case(nope);
+    }else if(t==RBRACE){
         ; // end of case list
     }else{
         raise_error();
@@ -412,7 +414,8 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     cjmp->type = CJMP; // actually not really sure if this is correct...
     // cjmp->cjmp_inst. // ...ahhh fuck this doesn't work. I think we need another NOOP @ the end of of every case block.
     cjmp->cjmp_inst.opernd1_index = location(scrutinee);
-    cjmp->cjmp_inst.condition_op = CONDITION_EQUAL;
+    cjmp->cjmp_inst.opernd2_index = location(scrutinee);
+    cjmp->cjmp_inst.condition_op = CONDITION_NOTEQUAL; // need to reverse target and next of CJMP because no EQUAL condition exists, apparently.
 
     jmp->type = JMP;
     jmp->jmp_inst.target = finalnop; // (for switch statement) jmp points to `finalnop` node at the end of switch
@@ -424,13 +427,15 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     body = parse_body();
     findTail(body)->next = jmp; // append unique jmp node to the end of the case body
     findTail(body)->next = casenop; // append case noop node to end of the case body
+    cjmp->next = casenop;
+    cjmp->cjmp_inst.target = body;
     return cjmp;
 }
 
 InstructionNode* parse_default_case(InstructionNode* nope){
     expect(DEFAULT);
     expect(COLON);
-    parse_body();
+    return parse_body();
 }
 
 // inputs is a list of input values. Consume one at every input statement?
