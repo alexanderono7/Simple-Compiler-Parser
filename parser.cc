@@ -362,12 +362,15 @@ InstructionNode* parse_for_stmt(InstructionNode* inst){
 }
 
 InstructionNode* parse_switch_stmt(InstructionNode* stmt){
+    InstructionNode* nope = newNode();
+    InstructionNode* head;
     // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
     // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
     expect(SWITCH);
     expect(ID);
     expect(LBRACE);
-    parse_case_list();
+
+    head = parse_case_list();
     TokenType t = lexer.peek(1).token_type;
     if(t==DEFAULT){
         parse_default_case();
@@ -381,12 +384,16 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
 }
 
 
-void parse_case_list(){
+InstructionNode* parse_case_list(){
     // case_list -> case case_list | case
-    parse_case();
+    InstructionNode* acase; // one single case instruction node
+    InstructionNode* caseList; // list of case instruction nodes
+    acase = parse_case();
+
     TokenType t = lexer.peek(1).token_type;
     if(t==CASE){
-        parse_case_list();
+        caseList = parse_case_list();
+        findTail(acase)->next = caseList; // append caseList to the end of `case`
     }else if(t==DEFAULT or t==RBRACE){
         ; // end of case list
     }else{
@@ -394,14 +401,14 @@ void parse_case_list(){
     }
 }
 
-void parse_case(){
+InstructionNode* parse_case(){
     expect(CASE);
     expect(NUM);
     expect(COLON);
     parse_body();
 }
 
-void parse_default_case(){
+InstructionNode* parse_default_case(){
     expect(DEFAULT);
     expect(COLON);
     parse_body();

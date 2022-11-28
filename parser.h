@@ -55,9 +55,9 @@ void parse_condition(InstructionNode* stmt);
 ConditionalOperatorType parse_relop();
 InstructionNode* parse_switch_stmt(InstructionNode* stmt);
 InstructionNode* parse_for_stmt(InstructionNode* stmt);
-void parse_case_list();
-void parse_case();
-void parse_default_case();
+InstructionNode* parse_case_list();
+InstructionNode* parse_case();
+InstructionNode* parse_default_case();
 
 void parse_inputs();
 void parse_num_list();
