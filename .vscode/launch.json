@@ -107,7 +107,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/a.out",
-            "args": ["<", "${fileDirname}/my_tests/switch_test.txt"],
+            "args": ["<", "${fileDirname}/my_tests/custom_switch_test.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
