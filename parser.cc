@@ -382,8 +382,10 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
         raise_error();
     }
     expect(RBRACE);
-    stmt->next = head;
-    return head; // placeholder
+
+    stmt->next = head; // stmt node isn't really necessary, but w/e. Just a NOOP which points to head of SWITCH block.
+    findTail(head)->next = finalnop; // append final NOOP node to end of SWITCH block (used by JMP nodes at the end of cases)
+    return head; // I don't really think this is necessary
 }
 
 InstructionNode* parse_case_list(string scrutinee, InstructionNode* finalnop){
@@ -413,7 +415,7 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     InstructionNode* cjmp = newNode(); // should be head of case block
     InstructionNode* body;
     InstructionNode* jmp = newNode();
-    InstructionNode* casenop = newNode();
+    //InstructionNode* casenop = newNode(); // actually I don't think the casenop is necessary.
     cjmp->type = CJMP; // actually not really sure if this is correct...
     // cjmp->cjmp_inst. // ...ahhh fuck this doesn't work. I think we need another NOOP @ the end of of every case block.
     // NEED TO FIX CJMP HERE!!!
@@ -422,7 +424,7 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
 
     jmp->type = JMP;
     jmp->jmp_inst.target = finalnop; // (for switch statement) jmp points to `finalnop` node at the end of switch
-    casenop->type = NOOP;
+    //casenop->type = NOOP;
 
     expect(CASE);
     // add num of case to mem as constant value
@@ -433,10 +435,10 @@ InstructionNode* parse_case(string scrutinee, InstructionNode* finalnop){
     expect(COLON);
     body = parse_body();
     findTail(body)->next = jmp; // append unique jmp node to the end of the case body
-    findTail(body)->next = casenop; // append case noop node to end of the case body 
+    //findTail(body)->next = casenop; // append case noop node to end of the case body 
 
     // note that because we don't have CONDITION_NOTEQUAL we reverse the `next` and `target` variables of the case's CJMP node.
-    cjmp->next = casenop;
+    //cjmp->next = casenop;
     cjmp->cjmp_inst.target = body;
     return cjmp;
 }
