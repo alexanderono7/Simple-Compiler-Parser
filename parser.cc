@@ -362,9 +362,9 @@ InstructionNode* parse_for_stmt(InstructionNode* inst){
 }
 
 InstructionNode* parse_switch_stmt(InstructionNode* stmt){
-    stmt->type = NOOP;
-    InstructionNode* nope = newNode();
-    nope->type = NOOP;
+    stmt->type = NOOP; // stmt argument will just be a NOOP which points to switch block since there's no actual "switch statement" node
+    InstructionNode* finalnop = newNode();
+    finalnop->type = NOOP;
     InstructionNode* head;
     // switch_stmt -> SWITCH ID LBRACE case_list RBRACE
     // switch_stmt -> SWITCH ID LBRACE case_list default_case RBRACE
@@ -372,10 +372,10 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     string scrutinee = expect(ID).lexeme; // scrutinee is the value to be matched on in a switch statement
     expect(LBRACE);
 
-    head = parse_case_list(scrutinee, nope);
+    head = parse_case_list(scrutinee, finalnop);
     TokenType t = lexer.peek(1).token_type;
     if(t==DEFAULT){
-        parse_default_case(nope);
+        parse_default_case(finalnop);
     }else if(t==RBRACE){
         ; // do nothing, fix later.
     }else{
@@ -386,19 +386,19 @@ InstructionNode* parse_switch_stmt(InstructionNode* stmt){
     return head; // placeholder
 }
 
-InstructionNode* parse_case_list(string scrutinee, InstructionNode* nope){
+InstructionNode* parse_case_list(string scrutinee, InstructionNode* finalnop){
     // case_list -> case case_list | case
     InstructionNode* acase; // one single case instruction node
     InstructionNode* caseList; // list of case instruction nodes
-    acase = parse_case(scrutinee, nope);
+    acase = parse_case(scrutinee, finalnop);
 
     TokenType t = lexer.peek(1).token_type;
     if(t==CASE){
-        caseList = parse_case_list(scrutinee, nope);
+        caseList = parse_case_list(scrutinee, finalnop);
         findTail(acase)->next = caseList; // append caseList to the end of `case`
     }else if(t==DEFAULT){
         ; // default case + end of case list
-        findTail(acase)->next = parse_default_case(nope);
+        findTail(acase)->next = parse_default_case(finalnop);
     }else if(t==RBRACE){
         ; // end of case list
     }else{
