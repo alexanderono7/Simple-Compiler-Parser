@@ -4,4 +4,5 @@ This project is a small compiler that reads an input program and generates an in
 The intermediate representation consists of instructions with specified types and operands, and can be interpreted and executed by provided code. 
 
 To run testcases:
-  ./test1
+    
+    ./test1
